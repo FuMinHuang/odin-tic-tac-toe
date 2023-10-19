@@ -1,81 +1,90 @@
-const gameBoardModule = (function() {
+// This is a self-contained module for managing a gameboard in a 3x3 grid.
+const gameboard = function() {
     const board = [];
     const rows = 3;
     const columns = 3;
-    
-    function _createBoard() {
-        for (let i = 0; i < rows; i++) {
-            board[i] = [];
-            for (let j = 0; j < columns; j++) {
-                board[i][j] = "";
-            }
+
+    // Create a 3x3 grid board
+    for ( let i = 0; i < rows; i ++) {
+        board[i] = [];
+        for ( let j = 0; j < columns; j++) {
+            board[i][j] = "";
         }
-        return board;
     }
     
-    function createBoard() {
-        return _createBoard();
+    // Function to place a player's mark on the gameboard
+    const placeMark = function(row, column, playerToken) {
+        board[row][column] = playerToken;
     }
 
-    return {
-        createBoard,      
-    };
-})();
+    // Function to get the current gameboard
+    const getBoard = () => board;
 
-
-const countModule = (function() {
-    let count = 1;
-
-    function getCount() {
-        return count;
-    }
-
-    function incrementCount() {
-        count++;
-    }
+    // Function to display the gameboard in the console
+    const displayBoard = () => {console.table(getBoard())}
 
     return {
-        getCount,
-        incrementCount,
-    };
-})();
-
-
-const playerFactory = function(name) {
-    return {
-        name,
+        getBoard,
+        displayBoard,
+        placeMark,
     };
 };
 
+// Module for managing palyers
+const playerController = function() {
+    const playersArr = [
+        {
+            name: "Player One",
+            token: "X",
+        },
+        {
+            name: "Player Two",
+            token: "O",
+        }
+    ];
 
-const isEvenOrOdd = function(number) {
-    if (number % 2 === 0) {
-      return "Even";
-    } else {
-      return "Odd";
-    }
-  }
-  
+    let activePlayer = playersArr[0];
 
-const gameBoard = gameBoardModule.createBoard()
-const playerX = playerFactory("X");
-const playerO = playerFactory("O");
+    // Function to get the currently active player
+    const getActivePlayer = () => activePlayer;
 
+    return {
+        playersArr,
+        getActivePlayer,
+    };
+}
 
-// const checkBoardEmpty = function() {
-//     return gameBoard.some(row => row.includes(playerX.name) || row.includes(playerO.name));
-// };
+// Module for game control
+const gameController = function() {
+    const board = gameboard();
+    board.displayBoard()
 
-const placeValue = function(row, column) {
-    if (isEvenOrOdd(countModule.getCount()) == "Odd") {
-        gameBoard[row][column] = playerX.name;        
-    } else {
-        gameBoard[row][column] = playerO.name;
-    }
-    countModule.incrementCount();
-};
+    const player = playerController();
+    const players = player.playersArr;
+    let activePlayer = player.getActivePlayer();
 
-placeValue(0,0);
-placeValue(0,1);
-placeValue(0,2);
-console.log(gameBoard);
+    // Function to switch to the other player's turn
+    const switchPlayerTurn = () => {
+        activePlayer = activePlayer === players[0] ? players[1] : players[0];
+    };
+
+    // Function to display the gameboard and the active player's turn
+    const displayNewRound = function() {
+        board.displayBoard();
+        console.log(`${activePlayer.name}(${activePlayer.token})'s turn.`);
+    };
+
+    // Function to play a round of the game
+    const playRound = function(row, column) {
+        board.placeMark(row, column,activePlayer.token);
+        switchPlayerTurn();
+        displayNewRound();
+    };
+
+    return {
+        playRound,
+    };
+}
+
+// Initialize the game controller
+const game = gameController();
